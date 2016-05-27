@@ -1,4 +1,4 @@
 
 public class Rep {
-	private int idade;
+	private int numero;
 }
