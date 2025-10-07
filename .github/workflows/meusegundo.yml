@@ -1,24 +1,40 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: 
-    pull_request:
-    push:
-        branches:
-            -main
-            -dev
-            -test
+name: Verificação da classe DocumentMINHACLASSE
+
+on:
+  pull_request:
+    branches: [ main, dev, test ]
+  push:
+    branches: [ main, dev, test ]
+
 jobs:
-  Explore-GitHub-Actions:
+  check-terms:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v5
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Procurar termos na classe DocumentMINHACLASSE
         run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+          # Procurar o arquivo contendo a classe DocumentMINHACLASSE
+          FILE=$(grep -rl "class DocumentMINHACLASSE" . || true)
+
+          if [ -z "$FILE" ]; then
+            echo "Classe DocumentMINHACLASSE não encontrada. Ignorando."
+            exit 1
+          fi
+
+          echo "Arquivo encontrado: $FILE"
+
+          # Verificar se contém 'um dois três'
+          if grep -q "um dois três" "$FILE"; then
+            echo "Encontrado 'um dois três'. Agora verificando por 'cada um no seu quadrado'..."
+            
+            if grep -q "cada um no seu quadrado" "$FILE"; then
+              echo "❌ Erro: Encontrado 'um dois três' E 'cada um no seu quadrado' na classe DocumentMINHACLASSE."
+              exit 1
+            else
+              echo "✔ Encontrado 'um dois três', mas NÃO 'cada um no seu quadrado'. OK."
+            fi
+          else
+            echo "✔ Não encontrado 'um dois três'. OK."
+          fi
