@@ -3,7 +3,7 @@ public class DocumentMINHACLASSE {
 	
 	private String id;
 	private Integer number;
-	// um dois três
+	// 'um dois três'
 	public String getId() {
 		return id;
 	}
