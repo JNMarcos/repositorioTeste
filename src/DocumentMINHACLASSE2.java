@@ -4,7 +4,6 @@ public class DocumentMINHACLASSE2 {
 	private String id;
 	private Integer number;
 	// 'um dois três'
-	// cada um no seu quadrado
 	
 	public String getId() {
 		return id;
