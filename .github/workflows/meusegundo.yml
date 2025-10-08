@@ -16,25 +16,27 @@ jobs:
       - name: Procurar termos na classe DocumentMINHACLASSE
         run: |
           # Procurar o arquivo contendo a classe DocumentMINHACLASSE
-          FILE=$(grep -Eril --include="*.java" "class DocumentMINHACLASSE[A-Za-z0-9_]*" . || true)
+          FILES=$(grep -Eril --include="*.java" "class DocumentMINHACLASSE[A-Za-z0-9_]*" . || true)
 
-          if [ -z "$FILE" ]; then
-            echo "Classe DocumentMINHACLASSE não encontrada. Ignorando."
+          if [ -z "$FILES" ]; then
+            echo "Classe DocumentMINHACLASSE não encontrada."
             exit 1
           fi
+          
+          for FILE in $FILES; do
+            echo "Arquivo encontrado: $FILE"
 
-          echo "Arquivo encontrado: $FILE"
-
-          # Verificar se contém 'um dois três'
-          if grep -q "um dois três" "$FILE"; then
-            echo "Encontrado 'um dois três'. Agora verificando por 'cada um no seu quadrado'..."
-            
-            if grep -q "cada um no seu quadrado" "$FILE"; then
-              echo "❌ Erro: Encontrado 'um dois três' E 'cada um no seu quadrado' na classe DocumentMINHACLASSE."
-              exit 1
+            # Verificar se contém 'um dois três'
+            if grep -q "um dois três" "$FILE"; then
+              echo "Encontrado 'um dois três'. Agora verificando por 'cada um no seu quadrado'..."
+              
+              if grep -q "cada um no seu quadrado" "$FILE"; then
+                echo "❌ Erro: Encontrado 'um dois três' E 'cada um no seu quadrado' na classe DocumentMINHACLASSE."
+                exit 1
+              else
+                echo "✔ Encontrado 'um dois três', mas NÃO 'cada um no seu quadrado'. OK."
+              fi
             else
-              echo "✔ Encontrado 'um dois três', mas NÃO 'cada um no seu quadrado'. OK."
+              echo "✔ Não encontrado 'um dois três'. OK."
             fi
-          else
-            echo "✔ Não encontrado 'um dois três'. OK."
-          fi
+          done
