@@ -2,7 +2,7 @@ name: Cleanup branches antigas
 
 on:
   schedule:
-    - cron: "0 3 * * 0"  # roda todo domingo às 03:00 UTC
+    - cron: "09 23 * * *"  # roda todo domingo às 03:00 UTC
   workflow_dispatch:      # também pode rodar manualmente
 
 jobs:
@@ -12,7 +12,7 @@ jobs:
       contents: write
 
     steps:
-      - name: Apagar branches inativas há mais de 90 dias
+      - name: Apagar branches inativas há mais de 365 dias
         uses: actions/github-script@v7
         with:
           script: |
