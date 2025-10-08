@@ -16,7 +16,7 @@ jobs:
       - name: Procurar termos na classe DocumentMINHACLASSE
         run: |
           # Procurar o arquivo contendo a classe DocumentMINHACLASSE
-          FILE=$(grep -ril --include="*.java" "class DocumentMINHACLASSE" . || true)
+          FILE=$(grep -Eril --include="*.java" "class DocumentMINHACLASSE[A-Za-z0-9_]*" . || true)
 
           if [ -z "$FILE" ]; then
             echo "Classe DocumentMINHACLASSE não encontrada. Ignorando."
