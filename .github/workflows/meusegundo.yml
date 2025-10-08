@@ -2,39 +2,82 @@ name: Verificação da classe DocumentMINHACLASSE
 
 on:
   pull_request:
-    branches: [ main, dev, test ]
+    types: [opened, synchronize, reopened]
   push:
-    branches: [ main, dev, test ]
 
 jobs:
   check-terms:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Procurar termos na classe DocumentMINHACLASSE
+      - name: Verificar classe DocumentMINHACLASSE
+        id: verificar
         run: |
-          # Procurar o arquivo contendo a classe DocumentMINHACLASSE
-          FILE=$(grep -ril --include="*.java" "class DocumentMINHACLASSE" . || true)
+          set -e
+          FILES=$(grep -Eril --include="*.java" "class DocumentMINHACLASSE[A-Za-z0-9_]*" . || true)
 
-          if [ -z "$FILE" ]; then
-            echo "Classe DocumentMINHACLASSE não encontrada. Ignorando."
+          if [ -z "$FILES" ]; then
+            echo "❌ Classe DocumentMINHACLASSE não encontrada."
+            echo "status=falha" >> $GITHUB_OUTPUT
+            echo "mensagem=Classe DocumentMINHACLASSE não encontrada." >> $GITHUB_OUTPUT
             exit 1
           fi
 
-          echo "Arquivo encontrado: $FILE"
+          echo "Arquivos encontrados:"
+          echo "$FILES"
 
-          # Verificar se contém 'um dois três'
-          if grep -q "um dois três" "$FILE"; then
-            echo "Encontrado 'um dois três'. Agora verificando por 'cada um no seu quadrado'..."
+          STATUS="ok"
+          MSG=""
+
+          for FILE in $FILES; do
+            echo "🔍 Verificando arquivo: $FILE"
             
-            if grep -q "cada um no seu quadrado" "$FILE"; then
-              echo "❌ Erro: Encontrado 'um dois três' E 'cada um no seu quadrado' na classe DocumentMINHACLASSE."
-              exit 1
+            if grep -q "um dois três" "$FILE"; then
+              if grep -q "cada um no seu quadrado" "$FILE"; then
+                echo "❌ Erro: Encontrado ambos ('um dois três' e 'cada um no seu quadrado') em $FILE"
+                MSG+="\n- ❌ Erro: Encontrado ambos ('um dois três' e 'cada um no seu quadrado') em \`$FILE\`"
+                STATUS="falha"
+              else
+                echo "⚠️ Aviso: Encontrado 'um dois três' em $FILE (sem 'cada um no seu quadrado')."
+                MSG+="\n- ⚠️ Aviso: Encontrado 'um dois três' em \`$FILE\` (sem 'cada um no seu quadrado')."
+              fi
             else
-              echo "✔ Encontrado 'um dois três', mas NÃO 'cada um no seu quadrado'. OK."
+              echo "✔ OK: Nenhum termo encontrado em $FILE"
+              MSG+="\n- ✔ OK: Nenhum termo proibido encontrado em \`$FILE\`"
             fi
-          else
-            echo "✔ Não encontrado 'um dois três'. OK."
+          done
+
+          {
+            echo "arquivos_falha<<EOF"
+            echo "$FILES"
+            echo "EOF"
+
+            echo "mensagem<<EOF"
+            echo -e "$MSG"
+            echo "EOF"
+
+            echo "status=$STATUS"
+          } >> $GITHUB_OUTPUT
+
+
+          if [ "$STATUS" = "falha" ]; then
+            exit 1
           fi
+
+      # ✅ Comentar automaticamente o resultado no PR
+      - name: Comentar resultado no Pull Request
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: documentminhaclasse-check
+          message: |
+            ${{ steps.verificar.outputs.status == 'ok' && '✅ **Verificação da classe `DocumentMINHACLASSE` passou com sucesso!** 🎉' || '⚠️ **Falha na verificação da classe `DocumentMINHACLASSE`**' }}
+
+            **Resumo da análise:**
+            ${{ steps.verificar.outputs.mensagem }}
+
+            ---
+            🧩 *Verificação automática executada via GitHub Actions.*
