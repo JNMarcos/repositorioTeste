@@ -50,9 +50,18 @@ jobs:
             fi
           done
 
-          echo "arquivos_falha=$FILES" >> $GITHUB_OUTPUT
-          echo "mensagem=$MSG" >> $GITHUB_OUTPUT
-          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          {
+            echo "arquivos_falha<<EOF"
+            echo "$FILES"
+            echo "EOF"
+
+            echo "mensagem<<EOF"
+            echo -e "$MSG"
+            echo "EOF"
+
+            echo "status=$STATUS"
+          } >> $GITHUB_OUTPUT
+
 
           if [ "$STATUS" = "falha" ]; then
             exit 1
