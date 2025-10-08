@@ -2,7 +2,7 @@ name: Cleanup branches antigas
 
 on:
   schedule:
-    - cron: "09 23 * * *"  # roda todo domingo às 03:00 UTC
+    - cron: "16 23 * * *"  # roda todo domingo às 03:00 UTC
   workflow_dispatch:      # também pode rodar manualmente
 
 jobs:
