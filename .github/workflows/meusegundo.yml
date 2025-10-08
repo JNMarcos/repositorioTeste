@@ -19,24 +19,48 @@ jobs:
           FILES=$(grep -Eril --include="*.java" "class DocumentMINHACLASSE[A-Za-z0-9_]*" . || true)
 
           if [ -z "$FILES" ]; then
-            echo "Classe DocumentMINHACLASSE não encontrada."
+            echo "Classe DocumentMINHACLASSE não encontrada.
+            echo "status=falha" >> $GITHUB_OUTPUT"
             exit 1
           fi
           
-          for FILE in $FILES; do
-            echo "Arquivo encontrado: $FILE"
+          echo "Arquivos encontrados:"
+          echo "$FILES"
 
-            # Verificar se contém 'um dois três'
+          STATUS="ok"
+          for FILE in $FILES; do
+            echo "🔍 Verificando arquivo: $FILE"
+            
             if grep -q "um dois três" "$FILE"; then
-              echo "Encontrado 'um dois três'. Agora verificando por 'cada um no seu quadrado'..."
-              
+              echo "Encontrado 'um dois três' em $FILE. Verificando 'cada um no seu quadrado'..."
               if grep -q "cada um no seu quadrado" "$FILE"; then
-                echo "❌ Erro: Encontrado 'um dois três' E 'cada um no seu quadrado' na classe DocumentMINHACLASSE."
-                exit 1
-              else
-                echo "✔ Encontrado 'um dois três', mas NÃO 'cada um no seu quadrado'. OK."
+                echo "❌ Erro: Encontrado ambos ('um dois três' e 'cada um no seu quadrado') em $FILE"
+                STATUS="falha"
               fi
-            else
-              echo "✔ Não encontrado 'um dois três'. OK."
             fi
           done
+
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "arquivos_falha=$FILES" >> $GITHUB_OUTPUT
+          
+          if [ "$STATUS" = "falha" ]; then
+            exit 1
+          fi
+          
+      - name: Comentar no Pull Request se falhar
+        if: ${{ failure() && github.event_name == 'pull_request' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: documentminhaclasse-check
+          message: |
+            ⚠️ **Falha na verificação da classe `DocumentMINHACLASSE`**
+            A verificação automática encontrou inconsistências nos arquivos `.java`.
+
+            - Classe contém `um dois três` e `cada um no seu quadrado`.
+            - Verifique e remova os termos antes de prosseguir.
+
+            > A Action falhou e o merge será bloqueado até a correção.
+            
+            Os seguintes arquivos foram afetados:
+            ${{ steps.verificar.outputs.arquivos_falha }}
+            Corrija os termos e reenvie o PR.
